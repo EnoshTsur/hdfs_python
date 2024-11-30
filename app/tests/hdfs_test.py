@@ -4,7 +4,7 @@ import os
 from app.repository.hdfs_repository import delete, create_directory, list_directory, upload_file, download_file
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def clean_up_fixture():
     directories_to_clean = list_directory("/")
     for directory in directories_to_clean:
@@ -12,7 +12,7 @@ def clean_up_fixture():
     yield
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def directory_fixture(clean_up_fixture):
     hdfs_directory = "/test_directory"
     create_directory(hdfs_directory)
