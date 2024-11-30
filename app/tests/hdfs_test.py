@@ -10,6 +10,9 @@ def clean_up_fixture():
     for directory in directories_to_clean:
         delete(f"/{directory}", recursive=True)
     yield
+    directories_to_clean = list_directory("/")
+    for directory in directories_to_clean:
+        delete(f"/{directory}", recursive=True)
 
 
 @pytest.fixture(scope="function")
