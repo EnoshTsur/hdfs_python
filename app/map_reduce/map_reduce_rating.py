@@ -1,5 +1,6 @@
 from app.settings.config import hdfs_client
 from functools import reduce
+import toolz as t
 from statistics import mean
 
 
@@ -17,22 +18,20 @@ def map_phase(line: str):
 
 def reduce_phase(mapped_data) -> dict:
     """
-    Reduce phase: Calculate average rating and count for each movie_id
+    Reduce phase: Calculate avg, sum, count rating and count for each movie_id
     """
-
-    def reducer(acc, n):
-        movie_id = n.get("movie_id")
-        rating = n.get("rating")
-
-        current = acc.get(str(movie_id), {'sum': 0, 'count': 0, 'ratings': []})
-        current['sum'] += rating
-        current['count'] += 1
-        current['ratings'].append(rating)
-        current['avg'] = current['sum'] / current['count']
-
-        return {**acc, str(movie_id): current}
-
-    return reduce(reducer, mapped_data, {})
+    return t.pipe(
+        t.groupby("movie_id", mapped_data),
+        lambda groups: t.valmap(
+            lambda movies: {
+                'rating': [m['rating'] for m in movies],
+                'count': len(movies),
+                'sum': sum(m['rating'] for m in movies),
+                'avg': mean(m['rating'] for m in movies)
+            },
+            groups
+        )
+    )
 
 
 def run_mapreduce(input_path: str, output_path: str):
