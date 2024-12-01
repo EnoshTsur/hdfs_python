@@ -1,7 +1,7 @@
 import pytest
 
-from app.map_reduce.map_reduce_rating import run_mapreduce
-from app.repository.hdfs_repository import create_directory, list_directory, delete, upload_file
+from app.map_reduce.map_reduce_rating import map_reduce
+from app.repository.hdfs_repository import create_directory, list_directory, delete, upload_file, read_path, write_path
 from app.settings.config import hdfs_client
 
 
@@ -28,10 +28,13 @@ def test_map_reduce(directory_fixture):
 
     upload_file(input_path,local_file_path)
 
-    run_mapreduce(input_path, f"{directory_fixture}/u2.data")
+    data = read_path(f"{directory_fixture}/u.data")
 
-    # Print directory listing
-    print("Directory contents:", list_directory('/'))
+    res = map_reduce(data)
+
+    output_content = "\n".join(res)
+
+    write_path(f"{directory_fixture}/u2.data", output_content)
 
     # Read and print file content
     with hdfs_client.read(f"{directory_fixture}/u2.data") as reader:
